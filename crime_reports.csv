@@ -1,0 +1,21 @@
+Dates,Category,Severity,Descript,DayOfWeek,PdDistrict,Resolution,Address,Latitude,Longitude
+2008 -09-20 09:00:00,BURGLARY,4,"Burglary of apartment house, unlawful entry. Suspect forced entry 
+and stole electronics.",Saturday,Tenderloin,,200 Block of JONES ST,37.7834687204586,-122.412573643201
+2012 -08-07 18:00:00,MISSING PERSON,1,Missing juvenile reported. Individual was later located safely.,Tuesday,Park,Located,800 Block of CENTRAL AV,37.77743975916521,-122.444994681535
+2014 -09-06 19:00:00,NON-CRIMINAL,1,"Aided case, mentally disturbed individual. Subject taken to 
+psychiatric care.",Saturday,Ingleside,Psychopathic Case,100 Block of HAHN ST,37.7126758141231,-122.415587200313
+2010 -12-29 08:39:00,OTHER OFFENSES,2,"Evading a police officer recklessly. High -speed pursuit ended in 
+suspect escaping.",Wednesday,Bayview,,REVERE AV / JENNINGS ST,37.7295447729645,-122.386420682522
+2015 -04-28 14:35:00,LARCENY/THEFT,3,Petty theft of property. Personal items taken from a commercial store.,Tuesday,Taraval,,700 Block of TARAVAL ST,37.743174496996296,-122.474102710416
+2004 -03-06 17:45:00,LARCENY/THEFT,3,"Grand theft from locked auto. Expensive belongings stolen from a 
+parked car.",Saturday,Southern,,0 Block of HARRISON ST,37.7892474519723,-122.389008295709
+2008 -09-20 09:00:00,BURGLARY,4,"Burglary of apartment house, unlawful entry. Suspect forced entry 
+and stole electronics.",Saturday,Tenderloin,None,200 Block of JONES ST,37.7834687204586,-122.412573643201
+2012 -08-07 18:00:00,MISSING PERSON,1,Missing juvenile reported. Individual was later located safely.,Tuesday,Park,Located,800 Block of CENTRAL AV,37.77743975916521,-122.444994681535
+2014 -09-06 19:00:00,NON-CRIMINAL,1,"Aided case, mentally disturbed individual. Subject taken to 
+psychiatric care.",Saturday,Ingleside,Psychopathic Case,100 Block of HAHN ST,37.7126758141231,-122.415587200313
+2010 -12-29 08:39:00,OTHER OFFENSES,2,"Evading a police officer recklessly. High -speed pursuit ended in 
+suspect escaping.",Wednesday,Bayview,None,REVERE AV / JENNINGS ST,37.7295447729645,-122.386420682522
+2015 -04-28 14:35:00,LARCENY/THEFT,3,Petty theft of property. Personal items taken from a commercial store.,Tuesday,Taraval,None,700 Block of TARAVAL ST,37.743174496996296,-122.474102710416
+2004 -03-06 17:45:00,LARCENY/THEFT,3,"Grand theft from locked auto. Expensive belongings stolen from a 
+parked car.",Saturday,Southern,None,0 Block of HARRISON ST,37.7892474519723,-122.389008295709
