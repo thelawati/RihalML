@@ -142,3 +142,4 @@ st.dataframe(df_display)
 # Placeholder for future map rendering
 st.markdown("---")
 st.subheader("\U0001F5FA Crime Map View (Coming Soon)")
+ECHO is on.
