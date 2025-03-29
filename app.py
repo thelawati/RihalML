@@ -24,7 +24,10 @@ def get_competition_data():
             'Longitude (X)': 'Latitude'
         }, inplace=True)
         df['Severity'] = map_severity(df['Category'])
-        return df[COLUMN_LIST]
+        df = df[COLUMN_LIST]
+        df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+        df['Dates'] = pd.to_datetime(df['Dates'], errors='coerce')
+        return df
     return pd.DataFrame(columns=COLUMN_LIST)
 
 # Function to get selected and filtered data
@@ -61,10 +64,26 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
         df_display = df_display[df_display['Category'].isin(selected_categories)]
 
     # Severity
-    all_severity = pd.concat([df_pdf, df_comp], ignore_index=True)['Severity'].dropna().unique().tolist()
-    selected_severity = st.sidebar.multiselect("Severity", all_severity)
+    all_severity = sorted(pd.concat([df_pdf, df_comp], ignore_index=True)['Severity'].dropna().unique().tolist(), key=int)
+    selected_severity = st.sidebar.multiselect("SEVERITY", all_severity)
     if selected_severity:
         df_display = df_display[df_display['Severity'].isin(selected_severity)]
+
+    # Hour
+    df_display['Hour'] = df_display['Dates'].dt.hour
+    all_hours = sorted(df_display['Hour'].dropna().unique().tolist())
+    selected_hours = st.sidebar.multiselect("Hour", all_hours)
+    if selected_hours:
+        df_display = df_display[df_display['Hour'].isin(selected_hours)]
+
+    # Time of Day
+    bins = [0, 6, 12, 18, 24]
+    labels = ['LATE NIGHT', 'MORNING', 'AFTERNOON', 'EVENING']
+    df_display['Time of Day'] = pd.cut(df_display['Hour'], bins=bins, labels=labels, right=False, include_lowest=True)
+    all_times = df_display['Time of Day'].dropna().unique().tolist()
+    selected_times = st.sidebar.multiselect("Time of Day", all_times)
+    if selected_times:
+        df_display = df_display[df_display['Time of Day'].isin(selected_times)]
 
     # Police District
     all_districts = pd.concat([df_pdf, df_comp], ignore_index=True)['PdDistrict'].dropna().unique().tolist()
@@ -78,22 +97,6 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     if selected_resolutions:
         df_display = df_display[df_display['Resolution'].isin(selected_resolutions)]
 
-        # Hour
-    df_display['Hour'] = df_display['Dates'].dt.hour
-    all_hours = sorted(df_display['Hour'].dropna().unique().tolist())
-    selected_hours = st.sidebar.multiselect("Hour of Day", all_hours)
-    if selected_hours:
-        df_display = df_display[df_display['Hour'].isin(selected_hours)]
-
-    # Time of Day
-    bins = [0, 6, 12, 18, 24]
-    labels = ['Late Night', 'Morning', 'Afternoon', 'Evening']
-    df_display['TimeOfDay'] = pd.cut(df_display['Hour'], bins=bins, labels=labels, right=False, include_lowest=True)
-    all_times = df_display['TimeOfDay'].dropna().unique().tolist()
-    selected_times = st.sidebar.multiselect("Time of Day", all_times)
-    if selected_times:
-        df_display = df_display[df_display['TimeOfDay'].isin(selected_times)]
-
     return df_display
 
 # Load model
@@ -102,6 +105,7 @@ model = get_model()
 # Load existing uploaded PDF data
 if os.path.exists(DATA_FILE):
     df_pdf = pd.read_csv(DATA_FILE)
+    df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     df_pdf = df_pdf[COLUMN_LIST]
     df_pdf['Dates'] = pd.to_datetime(df_pdf['Dates'], errors='coerce')
 else:
@@ -109,7 +113,6 @@ else:
 
 # Load competition dataset
 df_comp = get_competition_data()
-df_comp['Dates'] = pd.to_datetime(df_comp['Dates'], errors='coerce')
 
 # --- Streamlit UI ---
 st.title("\U0001F4C2 Police Crime Report Analyzer")
@@ -142,4 +145,3 @@ st.dataframe(df_display)
 # Placeholder for future map rendering
 st.markdown("---")
 st.subheader("\U0001F5FA Crime Map View (Coming Soon)")
-
