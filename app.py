@@ -123,17 +123,22 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     # Severity Filter with Slider
     severity_options = sorted(df_display['Severity'].dropna().unique().tolist())
     if severity_options:
-        severity_range = st.sidebar.slider(
-            "Severity Range", 
-            min_value=min(severity_options), 
-            max_value=max(severity_options), 
-            value=(min(severity_options), max(severity_options))
-        )
-        df_display = df_display[
-            (df_display['Severity'] >= severity_range[0]) & 
-            (df_display['Severity'] <= severity_range[1])
-        ]
-
+        if len(set(severity_options)) > 1:
+            severity_range = st.sidebar.slider(
+                "Severity Range", 
+                min_value=min(severity_options), 
+                max_value=max(severity_options), 
+                value=(min(severity_options), max(severity_options))
+            )
+            df_display = df_display[
+                (df_display['Severity'] >= severity_range[0]) & 
+                (df_display['Severity'] <= severity_range[1])
+            ]
+        else:
+            # Checkbox to filter or show all when single severity
+            show_all = st.sidebar.checkbox(f"Show All (Severity: {severity_options[0]})", value=True)
+            if not show_all:
+                df_display = df_display[df_display['Severity'] == severity_options[0]]
     # Statistics and Insights
     st.sidebar.markdown("### Dataset Insights")
     st.sidebar.write(f"Total Records: {len(df_display)}")
