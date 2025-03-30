@@ -116,11 +116,11 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     if selected_resolutions:
         df_display = df_display[df_display['Resolution'].isin(selected_resolutions)]
     st.write("📁 View:", dataset_choice)
-st.write("📊 Rows before filtering:", df_display.shape[0])
+    st.write("📊 Rows before filtering:", df_display.shape[0])
     st.write("📤 Rows after filtering:", df_display.shape[0])
     st.write("📅 Dates (Parsed):", df_display['Dates'].dropna().dt.strftime("%Y-%m-%d %H:%M:%S").unique())
-st.write("⏰ Hours:", df_display['Hour'].dropna().unique())
-st.write("🕒 Time of Day:", df_display['Time of Day'].dropna().unique())
+    st.write("⏰ Hours:", df_display['Hour'].dropna().unique())
+    st.write("🕒 Time of Day:", df_display['Time of Day'].dropna().unique())
     return df_display
 
 # Load model
