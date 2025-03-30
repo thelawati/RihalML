@@ -42,6 +42,7 @@ def get_competition_data():
 
 # Function to get selected and filtered data
 def get_display_data(dataset_choice, df_pdf, df_comp):
+    # Combine datasets based on choice
     if dataset_choice == "All Data":
         df_display = pd.concat([df_pdf, df_comp], ignore_index=True)
     elif dataset_choice == "PDF Data Only":
@@ -49,113 +50,149 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     else:
         df_display = df_comp
 
-    # Apply sidebar filters here
-    st.sidebar.header("\U0001F50D Filter Options")
-
-    # Dates
+    # Ensure consistent data types and preprocessing
     df_display['Dates'] = pd.to_datetime(df_display['Dates'], errors='coerce')
-    valid_dates = df_display['Dates'].notna()
+    df_display = df_display.dropna(subset=['Dates'])  # Remove rows with invalid dates
 
-    if valid_dates.any():
-        df_display = df_display[valid_dates]
+    # Create sidebar for filtering
+    st.sidebar.header("\U0001F50D Advanced Filters")
 
-        min_date = df_display['Dates'].min().date()
-        max_date = df_display['Dates'].max().date()
+    # Date Range Filter with Enhanced UI
+    min_date = df_display['Dates'].min().date()
+    max_date = df_display['Dates'].max().date()
+    
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        start_date = st.date_input("Start Date", min_value=min_date, max_value=max_date, value=min_date)
+    with col2:
+        end_date = st.date_input("End Date", min_value=min_date, max_value=max_date, value=max_date)
 
-        selected_range = st.sidebar.date_input(
-            "Date Range",
-            value=[min_date, max_date],
-            min_value=min_date,
-            max_value=max_date
-        )
+    # Apply date filter
+    df_display = df_display[
+        (df_display['Dates'].dt.date >= start_date) & 
+        (df_display['Dates'].dt.date <= end_date)
+    ]
 
-        if selected_range and len(selected_range) == 2:
-            start, end = selected_range
-            df_display = df_display[
-                (df_display['Dates'].dt.date >= start) &
-                (df_display['Dates'].dt.date <= end)
-            ]
+    # Enhanced Categorical Filters with Search
+    def create_searchable_multiselect(label, options):
+        search_term = st.sidebar.text_input(f"Search {label}", key=f"search_{label}")
+        filtered_options = [opt for opt in options if search_term.lower() in str(opt).lower()]
+        return st.sidebar.multiselect(label, filtered_options)
 
-    # Category
-    all_categories = pd.concat([df_pdf, df_comp], ignore_index=True)['Category'].dropna().unique().tolist()
-    selected_categories = st.sidebar.multiselect("Category", all_categories)
-    if selected_categories:
-        df_display = df_display[df_display['Category'].isin(selected_categories)]
+    # Categorical Filters with Search
+    filters = {
+        "Category": df_display['Category'].dropna().unique().tolist(),
+        "PdDistrict": df_display['PdDistrict'].dropna().unique().tolist(),
+        "Resolution": df_display['Resolution'].dropna().unique().tolist()
+    }
 
-    # Severity
-    all_severity = sorted(pd.concat([df_pdf, df_comp], ignore_index=True)['Severity'].dropna().unique().tolist(), key=int)
-    selected_severity = st.sidebar.multiselect("SEVERITY", all_severity)
-    if selected_severity:
-        df_display = df_display[df_display['Severity'].isin(selected_severity)]
+    # Apply categorical filters
+    for column, options in filters.items():
+        selected = create_searchable_multiselect(column, options)
+        if selected:
+            df_display = df_display[df_display[column].isin(selected)]
 
-    # Hour
+    # Time-based Filters
     df_display['Hour'] = df_display['Dates'].dt.hour
-    all_hours = sorted(df_display['Hour'].dropna().unique().tolist())
-    selected_hours = st.sidebar.multiselect("Hour", all_hours)
-    if selected_hours:
-        df_display = df_display[df_display['Hour'].isin(selected_hours)]
+    df_display['DayOfWeek'] = df_display['Dates'].dt.day_name()
 
-    # Time of Day
-    bins = [0, 6, 12, 18, 24]
-    labels = ['LATE NIGHT', 'MORNING', 'AFTERNOON', 'EVENING']
-    df_display['Time of Day'] = pd.cut(df_display['Hour'], bins=bins, labels=labels, right=False, include_lowest=True)
-    all_times = df_display['Time of Day'].dropna().unique().tolist()
-    selected_times = st.sidebar.multiselect("Time of Day", all_times)
-    if selected_times:
-        df_display = df_display[df_display['Time of Day'].isin(selected_times)]
+    # Time of Day Categorization
+    def categorize_time(hour):
+        if 0 <= hour < 6:
+            return 'Late Night'
+        elif 6 <= hour < 12:
+            return 'Morning'
+        elif 12 <= hour < 18:
+            return 'Afternoon'
+        else:
+            return 'Evening'
 
-    # Police District
-    all_districts = pd.concat([df_pdf, df_comp], ignore_index=True)['PdDistrict'].dropna().unique().tolist()
-    selected_districts = st.sidebar.multiselect("Police District", all_districts)
-    if selected_districts:
-        df_display = df_display[df_display['PdDistrict'].isin(selected_districts)]
+    df_display['Time of Day'] = df_display['Hour'].apply(categorize_time)
 
-    # Resolution
-    all_resolutions = pd.concat([df_pdf, df_comp], ignore_index=True)['Resolution'].dropna().unique().tolist()
-    selected_resolutions = st.sidebar.multiselect("Resolution", all_resolutions)
-    if selected_resolutions:
-        df_display = df_display[df_display['Resolution'].isin(selected_resolutions)]
+    # Additional Time Filters
+    time_filters = {
+        "Day of Week": df_display['DayOfWeek'].unique().tolist(),
+        "Time of Day": df_display['Time of Day'].unique().tolist()
+    }
 
-    # Debug info
-    st.write("📁 View:", dataset_choice)
-    st.write("📊 Rows before filtering:", df_display.shape[0])
-    st.write("📤 Rows after filtering:", df_display.shape[0])
-    st.write("📅 Dates (Parsed):", df_display['Dates'].dropna().dt.strftime("%Y-%m-%d %H:%M:%S").unique())
-    st.write("⏰ Hours:", df_display['Hour'].dropna().unique())
-    if 'Time of Day' in df_display.columns and not df_display['Time of Day'].dropna().empty:
-        st.write("🕒 Time of Day:", df_display['Time of Day'].dropna().astype(str).unique())
+    for column, options in time_filters.items():
+        selected = st.sidebar.multiselect(column, options)
+        if selected:
+            df_display = df_display[df_display[column].isin(selected)]
+
+    # Severity Filter with Slider
+    severity_options = sorted(df_display['Severity'].dropna().unique().tolist())
+    if severity_options:
+        severity_range = st.sidebar.slider(
+            "Severity Range", 
+            min_value=min(severity_options), 
+            max_value=max(severity_options), 
+            value=(min(severity_options), max(severity_options))
+        )
+        df_display = df_display[
+            (df_display['Severity'] >= severity_range[0]) & 
+            (df_display['Severity'] <= severity_range[1])
+        ]
+
+    # Statistics and Insights
+    st.sidebar.markdown("### Dataset Insights")
+    st.sidebar.write(f"Total Records: {len(df_display)}")
+    
+    # Pie chart of categories
+    if not df_display.empty:
+        category_counts = df_display['Category'].value_counts()
+        st.sidebar.markdown("#### Category Distribution")
+        st.sidebar.bar_chart(category_counts)
+
+    # Debugging and Transparency
+    st.sidebar.markdown("---")
+    st.sidebar.write(f"📁 View: {dataset_choice}")
+    st.sidebar.write(f"📊 Rows after filtering: {len(df_display)}")
+
     return df_display
-
 # Load model
 model = get_model()
 
 # Load existing uploaded PDF data from GCS
-def load_csv_from_gcs(bucket_name, blob_name):
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-    if blob.exists():
+def load_csv_from_gcs(bucket_name, blob_name) -> pd.DataFrame:
+    """Load CSV data from Google Cloud Storage with error handling."""
+    try:
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        if not blob.exists():
+            st.warning(f"The blob {blob_name} does not exist in bucket {bucket_name}.")
+            return pd.DataFrame(columns=COLUMN_LIST)
+        
         data = blob.download_as_bytes()
-        return pd.read_csv(BytesIO(data))
-    return pd.DataFrame(columns=COLUMN_LIST)
+        df = pd.read_csv(BytesIO(data))
+        return df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+    
+    except Exception as e:
+        st.error(f"Error loading CSV from GCS: {str(e)}")
+        return pd.DataFrame(columns=COLUMN_LIST)
 
-def save_csv_to_gcs(df, bucket_name, blob_name):
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer, index=False)
-    blob.upload_from_string(csv_buffer.getvalue(), content_type="text/csv")
+def save_csv_to_gcs(df: pd.DataFrame, bucket_name, blob_name):
+    """Save DataFrame to CSV in Google Cloud Storage with error handling."""
+    try:
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
 
-def clean_pdf_dataframe(df):
-    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-    if 'Dates' in df.columns:
-        df['Dates'] = df['Dates'].astype(str).str.strip()
-        df['Dates'] = pd.to_datetime(df['Dates'], errors='coerce')
-    return df
-
+        # Check if existing data is present and skip duplicating
+        if blob.exists():
+            existing_data = load_csv_from_gcs(bucket_name, blob_name)
+            df = pd.concat([existing_data, df]).drop_duplicates().reset_index(drop=True)
+        
+        with StringIO() as csv_buffer:
+            df.to_csv(csv_buffer, index=False)
+            blob.upload_from_string(csv_buffer.getvalue(), content_type="text/csv")
+        st.success("Data saved to GCS successfully!")
+    
+    except Exception as e:
+        st.error(f"Error saving CSV to GCS: {str(e)}")
 df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
-df_pdf = clean_pdf_dataframe(df_pdf)
+df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
 
 if 'Dates' in df_pdf.columns:
     df_pdf['Dates'] = df_pdf['Dates'].astype(str).str.strip()
@@ -176,18 +213,11 @@ if uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
         df_new = standardize_record(extracted, model)
         df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-        new_entries.append(df_new)
+        df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
 
-    if new_entries:
-        df_new_all = pd.concat(new_entries, ignore_index=True)
-        df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
-        save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
+    save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
+    st.success("\u2705 Reports uploaded and data saved!")
 
-        # Reload updated data and clean
-        df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
-        df_pdf = clean_pdf_dataframe(df_pdf)
-
-        st.success("✅ Reports uploaded and data saved!")
 
 # Dataset toggle
 dataset_choice = st.radio(
