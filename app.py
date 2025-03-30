@@ -180,7 +180,7 @@ if uploaded_files:
 
     if new_entries:
         df_new_all = pd.concat(new_entries, ignore_index=True)
-                df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
+        df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
         save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
 
         # Reload updated data and clean
