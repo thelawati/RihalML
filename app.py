@@ -116,6 +116,14 @@ def load_csv_from_gcs(bucket_name, blob_name):
         return pd.read_csv(BytesIO(data))
     return pd.DataFrame(columns=COLUMN_LIST)
 
+def save_csv_to_gcs(df, bucket_name, blob_name):
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    blob.upload_from_string(csv_buffer.getvalue(), content_type="text/csv")
+
 df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
 
 # Load competition dataset
@@ -139,13 +147,7 @@ if uploaded_files:
         df_new_all = pd.concat(new_entries, ignore_index=True)
         df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
 
-        def save_csv_to_gcs(df, bucket_name, blob_name):
-            client = storage.Client()
-            bucket = client.bucket(bucket_name)
-            blob = bucket.blob(blob_name)
-            csv_buffer = StringIO()
-            df.to_csv(csv_buffer, index=False)
-            blob.upload_from_string(csv_buffer.getvalue(), content_type="text/csv")
+
 
         save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
         st.success("✅ Reports uploaded and data saved!")
