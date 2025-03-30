@@ -11,6 +11,7 @@ MODEL_PATH = "a3crime_model.pkl"
 BUCKET_NAME = "rihal-ml-storage-001"
 CSV_FILENAME = "crime_reports.csv"
 DATA_FILE = "crime_reports.csv"
+COMPETITION_DATA = "Competition_Data"
 
 # Caching model loading
 @st.cache_resource
