@@ -222,7 +222,7 @@ if uploaded_files:
         st.write(df_new)
         df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
         st.write(df_new)
-        st.wrote("pdf before:", df_pdf)
+        st.write("pdf before:", df_pdf)
         df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
         st.write("pdf after:", df_pdf)
 
