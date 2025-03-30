@@ -147,8 +147,15 @@ def save_csv_to_gcs(df, bucket_name, blob_name):
     df.to_csv(csv_buffer, index=False)
     blob.upload_from_string(csv_buffer.getvalue(), content_type="text/csv")
 
+def clean_pdf_dataframe(df):
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+    if 'Dates' in df.columns:
+        df['Dates'] = df['Dates'].astype(str).str.strip()
+        df['Dates'] = pd.to_datetime(df['Dates'], errors='coerce')
+    return df
+
 df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
-df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+df_pdf = clean_pdf_dataframe(df_pdf)
 
 if 'Dates' in df_pdf.columns:
     df_pdf['Dates'] = df_pdf['Dates'].astype(str).str.strip()
@@ -169,11 +176,18 @@ if uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
         df_new = standardize_record(extracted, model)
         df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-        df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
+        new_entries.append(df_new)
 
-    save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
-    st.success("\u2705 Reports uploaded and data saved!")
+    if new_entries:
+        df_new_all = pd.concat(new_entries, ignore_index=True)
+                df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
+        save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
 
+        # Reload updated data and clean
+        df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
+        df_pdf = clean_pdf_dataframe(df_pdf)
+
+        st.success("✅ Reports uploaded and data saved!")
 
 # Dataset toggle
 dataset_choice = st.radio(
