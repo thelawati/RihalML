@@ -7,6 +7,7 @@ from datetime import datetime
 from data_processing import *
 
 # Constants
+COMPETITION_DATA = "Comptetition_data csv"
 MODEL_PATH = "a3crime_model.pkl"
 BUCKET_NAME = "rihal-ml-storage-001"
 CSV_FILENAME = "crime_reports.csv"
