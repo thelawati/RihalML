@@ -11,7 +11,6 @@ MODEL_PATH = "a3crime_model.pkl"
 BUCKET_NAME = "rihal-ml-storage-001"
 CSV_FILENAME = "crime_reports.csv"
 DATA_FILE = "crime_reports.csv"
-COMPETITION_DATA = "Competition_Dataset.csv"
 
 # Caching model loading
 @st.cache_resource
@@ -105,7 +104,9 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     selected_resolutions = st.sidebar.multiselect("Resolution", all_resolutions)
     if selected_resolutions:
         df_display = df_display[df_display['Resolution'].isin(selected_resolutions)]
-
+    st.write("📄 Rows before filtering:", df_pdf.shape[0])
+    st.write("📤 Rows after filtering:", df_display.shape[0])
+    st.write("🗓️ Unique Dates:", df_pdf['Dates'].dropna().unique())
     return df_display
 
 # Load model
