@@ -166,15 +166,15 @@ def load_csv_from_gcs(bucket_name, blob_name) -> pd.DataFrame:
         bucket = client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
         if not blob.exists():
-            st.warning(f"The blob {blob_name} does not exist in bucket {bucket_name}.")
+            
             return pd.DataFrame(columns=COLUMN_LIST)
-        
-        data = blob.download_as_bytes()
-        df = pd.read_csv(BytesIO(data))
+        else:
+            data = blob.download_as_bytes()
+            df = pd.read_csv(BytesIO(data))
         return df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     
     except Exception as e:
-        st.error(f"Error loading CSV from GCS: {str(e)}")
+        
         return pd.DataFrame(columns=COLUMN_LIST)
 
 def save_csv_to_gcs(df: pd.DataFrame, bucket_name, blob_name):
@@ -215,16 +215,19 @@ uploaded_files = st.file_uploader("Upload Police Crime Reports (PDF)", type=["pd
 if uploaded_files:
     new_entries = []
     st.write(new_entries)
-    
+    df_new = pd.DataFrame
     for uploaded_file in uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
-        df_new = standardize_record(extracted, model)
+        if df_new.empty:
+            df_new = standardize_record(extracted, model)
+        else:
+            df_new = pd.concat([df_new, standardize_record(extracted, model)], ignore_index=True)
         st.write(df_new)
-        df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-        st.write(df_new)
-        st.write("pdf before:", df_pdf)
-        df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
-        st.write("pdf after:", df_pdf)
+    df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+    st.write(df_new)
+    st.write("pdf before:", df_pdf)
+    df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
+    st.write("pdf after:", df_pdf)
 
     save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
     st.success("\u2705 Reports uploaded and data saved!")
