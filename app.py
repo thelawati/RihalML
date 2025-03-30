@@ -11,7 +11,7 @@ MODEL_PATH = "a3crime_model.pkl"
 BUCKET_NAME = "rihal-ml-storage-001"
 CSV_FILENAME = "crime_reports.csv"
 DATA_FILE = "crime_reports.csv"
-COMPETITION_DATA = "Competition_Data"
+
 
 # Caching model loading
 @st.cache_resource
@@ -57,7 +57,7 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     if valid_dates.any():
         min_date = df_display.loc[valid_dates, 'Dates'].min().date()
         max_date = df_display.loc[valid_dates, 'Dates'].max().date()
-        selected_range = st.sidebar.date_input("Date Range", [min_date, max_date], min_value=min_date, max_value=max_date)
+        selected_range = st.sidebar.date_input("Date Range", value=[min_date, max_date], min_value=min_date, max_value=max_date)
 
         if selected_range and len(selected_range) == 2:
             start, end = selected_range
