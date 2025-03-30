@@ -169,22 +169,11 @@ if uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
         df_new = standardize_record(extracted, model)
         df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-        new_entries.append(df_new)
+        df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
 
-    if new_entries:
-        df_new_all = pd.concat(new_entries, ignore_index=True)
-        df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
+    save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
+    st.success("\u2705 Reports uploaded and data saved!")
 
-
-
-        save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
-
-        # Reload updated data from GCS to ensure it's clean and consistent
-        df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
-        df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-        df_pdf['Dates'] = pd.to_datetime(df_pdf['Dates'], errors='coerce')
-
-        st.success("✅ Reports uploaded and data saved!")
 
 # Dataset toggle
 dataset_choice = st.radio(
