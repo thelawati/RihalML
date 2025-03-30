@@ -21,8 +21,12 @@ def get_model():
 # Caching competition dataset
 @st.cache_data
 def get_competition_data():
-    if os.path.exists(COMPETITION_DATA):
-        df = pd.read_csv(COMPETITION_DATA)
+    client = storage.Client()
+    bucket = client.bucket(BUCKET_NAME)
+    blob = bucket.blob(COMPETITION_DATA)
+    if blob.exists():
+        data = blob.download_as_bytes()
+        df = pd.read_csv(BytesIO(data))
         df.rename(columns={
             'Latitude (Y)': 'Longitude',
             'Longitude (X)': 'Latitude'
@@ -32,6 +36,7 @@ def get_competition_data():
         df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
         df['Dates'] = pd.to_datetime(df['Dates'], errors='coerce')
         return df
+    return pd.DataFrame(columns=COLUMN_LIST)
     return pd.DataFrame(columns=COLUMN_LIST)
 
 # Function to get selected and filtered data
@@ -125,6 +130,8 @@ def save_csv_to_gcs(df, bucket_name, blob_name):
     blob.upload_from_string(csv_buffer.getvalue(), content_type="text/csv")
 
 df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
+df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+df_pdf['Dates'] = pd.to_datetime(df_pdf['Dates'], errors='coerce')
 
 # Load competition dataset
 df_comp = get_competition_data()
