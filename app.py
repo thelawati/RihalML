@@ -7,7 +7,7 @@ from datetime import datetime
 from data_processing import *
 
 # Constants
-COMPETITION_DATA = "Comptetition_data csv"
+COMPETITION_DATA = "Competition_Dataset.csv"
 MODEL_PATH = "a3crime_model.pkl"
 BUCKET_NAME = "rihal-ml-storage-001"
 CSV_FILENAME = "crime_reports.csv"
@@ -55,16 +55,25 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     # Dates
     df_display['Dates'] = pd.to_datetime(df_display['Dates'], errors='coerce')
     valid_dates = df_display['Dates'].notna()
+
     if valid_dates.any():
-        min_date = df_display.loc[valid_dates, 'Dates'].min().date()
-        max_date = df_display.loc[valid_dates, 'Dates'].max().date()
-        selected_range = st.sidebar.date_input("Date Range", value=[min_date, max_date], min_value=min_date, max_value=max_date)
+        df_display = df_display[valid_dates]
+
+        min_date = df_display['Dates'].min().date()
+        max_date = df_display['Dates'].max().date()
+
+        selected_range = st.sidebar.date_input(
+            "Date Range",
+            value=[min_date, max_date],
+            min_value=min_date,
+            max_value=max_date
+        )
 
         if selected_range and len(selected_range) == 2:
             start, end = selected_range
             df_display = df_display[
-                (df_display['Dates'] >= pd.to_datetime(start)) &
-                (df_display['Dates'] <= pd.to_datetime(end))
+                (df_display['Dates'].dt.date >= start) &
+                (df_display['Dates'].dt.date <= end)
             ]
 
     # Category
@@ -106,9 +115,12 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
     selected_resolutions = st.sidebar.multiselect("Resolution", all_resolutions)
     if selected_resolutions:
         df_display = df_display[df_display['Resolution'].isin(selected_resolutions)]
-    st.write("📄 Rows before filtering:", df_pdf.shape[0])
+    st.write("📁 View:", dataset_choice)
+st.write("📊 Rows before filtering:", df_display.shape[0])
     st.write("📤 Rows after filtering:", df_display.shape[0])
-    st.write("🗓️ Unique Dates:", df_pdf['Dates'].dropna().unique())
+    st.write("📅 Dates (Parsed):", df_display['Dates'].dropna().dt.strftime("%Y-%m-%d %H:%M:%S").unique())
+st.write("⏰ Hours:", df_display['Hour'].dropna().unique())
+st.write("🕒 Time of Day:", df_display['Time of Day'].dropna().unique())
     return df_display
 
 # Load model
@@ -134,7 +146,10 @@ def save_csv_to_gcs(df, bucket_name, blob_name):
 
 df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
 df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-df_pdf['Dates'] = pd.to_datetime(df_pdf['Dates'], errors='coerce')
+
+if 'Dates' in df_pdf.columns:
+    df_pdf['Dates'] = df_pdf['Dates'].astype(str).str.strip()
+    df_pdf['Dates'] = pd.to_datetime(df_pdf['Dates'], errors='coerce')
 
 # Load competition dataset
 df_comp = get_competition_data()
@@ -160,6 +175,12 @@ if uploaded_files:
 
 
         save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
+
+        # Reload updated data from GCS to ensure it's clean and consistent
+        df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
+        df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+        df_pdf['Dates'] = pd.to_datetime(df_pdf['Dates'], errors='coerce')
+
         st.success("✅ Reports uploaded and data saved!")
 
 # Dataset toggle
