@@ -214,11 +214,17 @@ uploaded_files = st.file_uploader("Upload Police Crime Reports (PDF)", type=["pd
 
 if uploaded_files:
     new_entries = []
+    st.write(new_entries)
+    
     for uploaded_file in uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
         df_new = standardize_record(extracted, model)
+        st.write(df_new)
         df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+        st.write(df_new)
+        st.wrote("pdf before:", df_pdf)
         df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
+        st.write("pdf after:", df_pdf)
 
     save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
     st.success("\u2705 Reports uploaded and data saved!")
