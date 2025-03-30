@@ -220,7 +220,7 @@ if uploaded_files:
         df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
         df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
 
-    save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
+    save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
     st.success("\u2705 Reports uploaded and data saved!")
 
 
