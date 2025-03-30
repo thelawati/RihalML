@@ -121,13 +121,18 @@ st.title("\U0001F4C2 Police Crime Report Analyzer")
 uploaded_files = st.file_uploader("Upload Police Crime Reports (PDF)", type=["pdf"], accept_multiple_files=True)
 
 if uploaded_files:
+    new_entries = []
     for uploaded_file in uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
         df_new = standardize_record(extracted, model)
         df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-        df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
+        new_entries.append(df_new)
 
-    df_pdf.to_csv(DATA_FILE, index=False)
+    if new_entries:
+        df_new_all = pd.concat(new_entries, ignore_index=True)
+        df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
+        df_pdf.to_csv(DATA_FILE, index=False)
+        st.success("✅ Reports uploaded and data saved!")
     st.success("\u2705 Reports uploaded and data saved!")
 
 # Dataset toggle

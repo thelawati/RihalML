@@ -4,3 +4,6 @@ scikit-learn
 joblib
 PyPDF2
 folium
+google-cloud-storage
+gcsfs
+numpy
