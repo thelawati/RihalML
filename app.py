@@ -1,11 +1,15 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO, StringIO
+from google.cloud import storage
 import os
 from datetime import datetime
 from data_processing import *
 
 # Constants
 MODEL_PATH = "a3crime_model.pkl"
+BUCKET_NAME = "rihal-ml-storage-001"
+CSV_FILENAME = "crime_reports.csv"
 DATA_FILE = "crime_reports.csv"
 COMPETITION_DATA = "Competition_Dataset.csv"
 
@@ -102,14 +106,17 @@ def get_display_data(dataset_choice, df_pdf, df_comp):
 # Load model
 model = get_model()
 
-# Load existing uploaded PDF data
-if os.path.exists(DATA_FILE):
-    df_pdf = pd.read_csv(DATA_FILE)
-    df_pdf = df_pdf.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-    df_pdf = df_pdf[COLUMN_LIST]
-    df_pdf['Dates'] = pd.to_datetime(df_pdf['Dates'], errors='coerce')
-else:
-    df_pdf = pd.DataFrame(columns=COLUMN_LIST)
+# Load existing uploaded PDF data from GCS
+def load_csv_from_gcs(bucket_name, blob_name):
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    if blob.exists():
+        data = blob.download_as_bytes()
+        return pd.read_csv(BytesIO(data))
+    return pd.DataFrame(columns=COLUMN_LIST)
+
+df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
 
 # Load competition dataset
 df_comp = get_competition_data()
@@ -131,9 +138,17 @@ if uploaded_files:
     if new_entries:
         df_new_all = pd.concat(new_entries, ignore_index=True)
         df_pdf = pd.concat([df_pdf, df_new_all], ignore_index=True)
-        df_pdf.to_csv(DATA_FILE, index=False)
+
+        def save_csv_to_gcs(df, bucket_name, blob_name):
+            client = storage.Client()
+            bucket = client.bucket(bucket_name)
+            blob = bucket.blob(blob_name)
+            csv_buffer = StringIO()
+            df.to_csv(csv_buffer, index=False)
+            blob.upload_from_string(csv_buffer.getvalue(), content_type="text/csv")
+
+        save_csv_to_gcs(df_pdf, BUCKET_NAME, CSV_FILENAME)
         st.success("✅ Reports uploaded and data saved!")
-    st.success("\u2705 Reports uploaded and data saved!")
 
 # Dataset toggle
 dataset_choice = st.radio(
