@@ -42,14 +42,15 @@ if uploaded_files:
         
     df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     st.write(df_new)
-    df_pdf = pd.concat([df_pdf, df_new], ignore_index=True).drop_duplicates().reset_index(drop=True)
+    df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
     
 
     save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
     st.success("\u2705 Reports uploaded and data saved! ")
 
 
-
+# Load existing pdf data
+df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
 
 # Get filtered dataset
 df_display = get_display_data(df_pdf, df_comp)
