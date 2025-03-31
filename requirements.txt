@@ -7,3 +7,5 @@ folium
 google-cloud-storage
 gcsfs
 numpy
+streamlit-folium
+altair
