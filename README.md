@@ -16,20 +16,20 @@ This project is a Streamlit dashboard designed to visualize and analyze crime da
 
 
 
-## 🖥 Live Dashboard
+## Live Dashboard
 
-🌐 **[Click here to view the deployed dashboard](https://rihalml2-414717700432.us-central1.run.app/)**  
+**[Click here to view the deployed dashboard](https://rihalml2-414717700432.us-central1.run.app/)**  
 Hosted on Google Cloud Run
   
-### 🎥 Demo: Streamlit Overview
+### Demo: Streamlit Overview
 
-[▶️ Watch Streamlit Overview Demo](media/Streamlit%20Overview%20Demo.mp4)
+[Watch Streamlit Overview Demo](media/Streamlit%20Overview%20Demo.mp4)
 
 ---
 
-### 📄 Demo: Uploading a PDF Report
+### Demo: Uploading a PDF Report
 
-[▶️ Watch Uploading PDF Demo](media/Uploading%20PDF%20Demo.mp4)
+[Watch Uploading PDF Demo](media/Uploading%20PDF%20Demo.mp4)
 
 
 
