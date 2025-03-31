@@ -20,12 +20,11 @@ df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
 # Load competition dataset
 df_comp = get_competition_data()
 
+
 # --- Streamlit UI ---
 st.title("\U0001F4C2 Police Crime Report Analyzer")
 
 
-# Get filtered dataset
-df_display = get_display_data(df_pdf, df_comp)
 
 # File uploader logic
 uploaded_files = st.file_uploader("Upload Police Crime Reports (PDF)", type=["pdf"], accept_multiple_files=True)
@@ -33,7 +32,7 @@ uploaded_files = st.file_uploader("Upload Police Crime Reports (PDF)", type=["pd
 if uploaded_files:
     new_entries = []
     
-    df_new = pd.DataFrame
+    df_new = pd.DataFrame()
     for uploaded_file in uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
         if df_new.empty:
@@ -48,6 +47,12 @@ if uploaded_files:
 
     save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
     st.success("\u2705 Reports uploaded and data saved! ")
+
+
+
+
+# Get filtered dataset
+df_display = get_display_data(df_pdf, df_comp)
 
 
 # Crime map view
