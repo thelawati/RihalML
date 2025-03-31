@@ -3,6 +3,9 @@ Markdown
 # 2025 ML Rihal Codestacker Challenge: CityX Crime Watch - Operation Safe Streets
 
 ## Overview
+### 📽 Demo: Crime Dashboard Walkthrough
+[Watch Video](media/Streamlit Overview Demo.mp4)
+[Watch Video](media/Uploading PDF Demo.mp4)
 
 This project is a Streamlit dashboard designed to visualize and analyze crime data for CityX. It allows users to:
 
@@ -10,6 +13,7 @@ This project is a Streamlit dashboard designed to visualize and analyze crime da
 * Explore crime statistics through various data visualizations (Altair charts).
 * Upload new crime reports (PDFs) and automatically categorize them using a machine learning model.
 * Manage and interact with the data stored on Google Cloud Storage.
+
 
 ## Tech Stack
 
