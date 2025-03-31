@@ -4,6 +4,7 @@ from typing import Dict, Any, BinaryIO, Union
 import pandas as pd
 import joblib
 from PyPDF2 import PdfReader
+import altair as alt
 
 # Constants
 COLUMN_LIST = [
@@ -106,18 +107,24 @@ def predict_category(model, description: str) -> Union[str, None]:
         return model.predict([description])[0]
     return None
 
-def get_severity(category: str) -> Union[int, str]:
-    return SEVERITY_MAP.get(category, 0)
 
-def map_severity(series: pd.Series) -> pd.Series:
-    return series.apply(get_severity)
-
-def standardize_record(record: Dict[str, Any], model) -> pd.DataFrame:
+def standardize_pdf_record(record: Dict[str, Any], model) -> pd.DataFrame:
     # Convert all string fields to uppercase first
     record = {k: v.upper() if isinstance(v, str) else v for k, v in record.items()}
     
     # Then apply classification and severity
     record['Category'] = predict_category(model, record.get('Descript'))
-    record['Severity'] = get_severity(record['Category'])
+    record['Severity'] = SEVERITY_MAP.get(record['Category'], 0)
     record = {k: v.upper() if isinstance(v, str) else v for k, v in record.items()}
     return pd.DataFrame([record])[COLUMN_LIST]
+
+def process_comp_data(df):
+    df.rename(columns={
+            'Latitude (Y)': 'Longitude',
+            'Longitude (X)': 'Latitude'
+        }, inplace=True)
+    df['Severity'] = df['Category'].map(SEVERITY_MAP).fillna(0).astype(int)
+    df = df[COLUMN_LIST]
+    df = df.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+    df['Dates'] = pd.to_datetime(df['Dates'], errors='coerce')
+    return df
