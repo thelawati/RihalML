@@ -27,10 +27,31 @@ st.title("\U0001F4C2 Police Crime Report Analyzer")
 # Get filtered dataset
 df_display = get_display_data(df_pdf, df_comp)
 
+# File uploader logic
+uploaded_files = st.file_uploader("Upload Police Crime Reports (PDF)", type=["pdf"], accept_multiple_files=True)
+
+if uploaded_files:
+    new_entries = []
+    
+    df_new = pd.DataFrame
+    for uploaded_file in uploaded_files:
+        extracted = extract_from_pdf(uploaded_file)
+        if df_new.empty:
+            df_new = standardize_pdf_record(extracted, model)
+        else:
+            df_new = pd.concat([df_new, standardize_pdf_record(extracted, model)], ignore_index=True)
+        
+    df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+    st.write(df_new)
+    df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
+    
+
+    save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
+    st.success("\u2705 Reports uploaded and data saved! ")
 
 
 # Crime map view
-
+st.markdown("---")
 st.subheader("🗺 Crime Map & Table View")
 st.write("Map and Table will show a maximum of 1000 crimes. Utilize the filters to drill in!")
 
@@ -67,26 +88,6 @@ except Exception as e:
 st.dataframe(df_map) 
 
 
-# File uploader logic
-uploaded_files = st.file_uploader("Upload Police Crime Reports (PDF)", type=["pdf"], accept_multiple_files=True)
-
-if uploaded_files:
-    new_entries = []
-    st.write(new_entries)
-    df_new = pd.DataFrame
-    for uploaded_file in uploaded_files:
-        extracted = extract_from_pdf(uploaded_file)
-        if df_new.empty:
-            df_new = standardize_pdf_record(extracted, model)
-        else:
-            df_new = pd.concat([df_new, standardize_pdf_record(extracted, model)], ignore_index=True)
-        st.write(df_new)
-    df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
-    df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
-    
-
-    save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
-    st.success("\u2705 Reports uploaded and data saved!")
 
 
 st.markdown("---")
