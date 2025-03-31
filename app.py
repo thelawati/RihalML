@@ -37,10 +37,13 @@ if uploaded_files:
         extracted = extract_from_pdf(uploaded_file)
         if df_new.empty:
             df_new = standardize_pdf_record(extracted, model)
+
         else:
             df_new = pd.concat([df_new, standardize_pdf_record(extracted, model)], ignore_index=True)
         
+    df_new['Dates'] = pd.to_datetime(df_new['Dates'], errors='coerce')
     df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
+
     st.write(df_new)
     df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
     
