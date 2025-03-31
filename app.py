@@ -22,7 +22,7 @@ df_comp = get_competition_data()
 
 
 # --- Streamlit UI ---
-st.title("\U0001F4C2 Police Crime Report Analyzer")
+st.title("\U0001F4C2 CityX Crime Report Interface")
 
 
 
@@ -42,7 +42,7 @@ if uploaded_files:
         
     df_new = df_new.applymap(lambda x: x.upper() if isinstance(x, str) else x)
     st.write(df_new)
-    df_pdf = pd.concat([df_pdf, df_new], ignore_index=True)
+    df_pdf = pd.concat([df_pdf, df_new], ignore_index=True).drop_duplicates().reset_index(drop=True)
     
 
     save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
