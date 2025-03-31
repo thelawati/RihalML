@@ -31,7 +31,7 @@ This project is a Streamlit dashboard designed to visualize and analyze crime da
 * `data_processing.py`: Module for data preprocessing.
 * `Dockerfile`: Docker configuration file.
 * `Competition_Dataset.csv`: Training dataset for the machine learning model (stored in Google Cloud Storage).
-* `crime_reports`: directory where uploaded crime reports are stored.
+* `crime_reports.csv`: directory where uploaded crime reports are stored.
 
 ## Google Cloud Setup
 
