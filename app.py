@@ -87,3 +87,8 @@ if uploaded_files:
 
     save_csv_to_gcs(df_new, BUCKET_NAME, CSV_FILENAME)
     st.success("\u2705 Reports uploaded and data saved!")
+
+
+st.markdown("---")
+st.subheader("🚨 Crime Overview Snapshot")
+display_crime_snapshot(df_display)
