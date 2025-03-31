@@ -20,30 +20,6 @@ BUCKET_NAME = "rihal-ml-storage-001"
 CSV_FILENAME = "crime_reports.csv"
 DATA_FILE = "crime_reports.csv"
 
-
-# Caching model loading
-@st.cache_resource
-def get_model():
-    return load_model(MODEL_PATH)
-
-
-# Caching competition dataset
-@st.cache_data()
-def get_competition_data():
-    #Connect to Google Storage
-    client = storage.Client()
-    bucket = client.bucket(BUCKET_NAME)
-    blob = bucket.blob(COMPETITION_DATA)
-    if blob.exists():
-        data = blob.download_as_bytes()
-        df = pd.read_csv(BytesIO(data))
-
-        #Process competition data using function from data_processing
-        return process_comp_data(df)
-    #Return empty dataframe otherwise
-    return pd.DataFrame(columns=COLUMN_LIST)
-
-
 # Load existing uploaded PDF data from GCS
 def load_csv_from_gcs(bucket_name, blob_name) -> pd.DataFrame:
     """Load CSV data from Google Cloud Storage with error handling."""
@@ -88,6 +64,32 @@ def save_csv_to_gcs(df: pd.DataFrame, bucket_name, blob_name):
     
     except Exception as e:
         st.error(f"Error saving CSV to GCS: {str(e)}")
+
+
+
+
+# Caching model loading
+@st.cache_resource
+def get_model():
+    return load_model(MODEL_PATH)
+
+
+# Caching competition dataset
+@st.cache_data()
+def get_competition_data():
+    #Connect to Google Storage
+    client = storage.Client()
+    bucket = client.bucket(BUCKET_NAME)
+    blob = bucket.blob(COMPETITION_DATA)
+    if blob.exists():
+        data = blob.download_as_bytes()
+        df = pd.read_csv(BytesIO(data))
+
+        #Process competition data using function from data_processing
+        return process_comp_data(df)
+    #Return empty dataframe otherwise
+    return pd.DataFrame(columns=COLUMN_LIST)
+
 
 
 
@@ -165,8 +167,6 @@ def apply_filters(df, filters):
 def get_display_data(df_pdf, df_comp):
     # Combine all data for filtering sidebar setup
     df_all = pd.concat([df_pdf, df_comp], ignore_index=True)
-    df_all['Dates'] = pd.to_datetime(df_all['Dates'], errors='coerce')
-    df_all = df_all.dropna(subset=['Dates'])
     df_all['Hour'] = df_all['Dates'].dt.hour
     df_all['DayOfWeek'] = df_all['Dates'].dt.day_name()
 
@@ -185,11 +185,11 @@ def get_display_data(df_pdf, df_comp):
     dataset_choice, filters = display_filter_sidebar(df_all)
 
     if dataset_choice == "All Data":
-        df_display = df_all.copy()
+        df_display = df_all
     elif dataset_choice == "PDF Data Only":
-        df_display = df_pdf.copy()
+        df_display = df_pdf
     else:
-        df_display = df_comp.copy()
+        df_display = df_comp
 
     df_display['Dates'] = pd.to_datetime(df_display['Dates'], errors='coerce')
     df_display = df_display.dropna(subset=['Dates'])
