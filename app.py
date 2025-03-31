@@ -51,6 +51,7 @@ if uploaded_files:
 
 # Load existing pdf data
 df_pdf = load_csv_from_gcs(BUCKET_NAME, CSV_FILENAME)
+df_pdf = df_pdf.drop_duplicates().reset_index(drop=True)
 
 # Get filtered dataset
 df_display = get_display_data(df_pdf, df_comp)
