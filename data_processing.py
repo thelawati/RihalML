@@ -109,10 +109,9 @@ def predict_category(model, description: str) -> Union[str, None]:
 
 
 def standardize_pdf_record(record: Dict[str, Any], model) -> pd.DataFrame:
-    # Convert all string fields to uppercase first
-    record = {k: v.upper() if isinstance(v, str) else v for k, v in record.items()}
-    
+ 
     # Then apply classification and severity
+
     record['Category'] = predict_category(model, record.get('Descript'))
     record['Severity'] = SEVERITY_MAP.get(record['Category'], 0)
     record = {k: v.upper() if isinstance(v, str) else v for k, v in record.items()}
