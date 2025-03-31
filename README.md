@@ -2,7 +2,23 @@ Markdown
 
 # 2025 ML Rihal Codestacker Challenge: CityX Crime Watch - Operation Safe Streets
 
+
+
+
 ## Overview
+This project is a Streamlit dashboard designed to visualize and analyze crime data for CityX. It allows users to:
+
+* View crime data on an interactive map using Folium.
+* Explore crime statistics through various data visualizations (Altair charts).
+* Upload new crime reports (PDFs) and automatically categorize them using a machine learning model.
+* Manage and interact with the data stored on Google Cloud Storage.
+
+
+## 🖥 Live Dashboard
+
+🌐 **[Click here to view the deployed dashboard](https://rihalml2-414717700432.us-central1.run.app/)**  
+Hosted on Google Cloud Run
+  
 ### 🎥 Demo: Streamlit Overview
 
 [▶️ Watch Streamlit Overview Demo](media/Streamlit%20Overview%20Demo.mp4)
@@ -13,12 +29,6 @@ Markdown
 
 [▶️ Watch Uploading PDF Demo](media/Uploading%20PDF%20Demo.mp4)
 
-This project is a Streamlit dashboard designed to visualize and analyze crime data for CityX. It allows users to:
-
-* View crime data on an interactive map using Folium.
-* Explore crime statistics through various data visualizations (Altair charts).
-* Upload new crime reports (PDFs) and automatically categorize them using a machine learning model.
-* Manage and interact with the data stored on Google Cloud Storage.
 
 
 ## Tech Stack
